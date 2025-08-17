@@ -2,6 +2,7 @@ using GuestRegistration.Application.Services;
 using GuestRegistration.Core.Interfaces;
 using GuestRegistration.Infrastructure.Persistence;
 using GuestRegistration.Infrastructure.Persistence.Repositories;
+using GuestRegistration.Infrastructure.Seed;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 
@@ -19,11 +20,13 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Host.UseSerilog((context, services, configuration) => configuration
-    .ReadFrom.Configuration(context.Configuration) // Read config from appsettings.json
+    .ReadFrom.Configuration(context.Configuration)
     .ReadFrom.Services(services)
     .Enrich.FromLogContext());
 
 var app = builder.Build();
+
+await DataSeeder.SeedAsync(app);
 
 if (app.Environment.IsDevelopment())
 {

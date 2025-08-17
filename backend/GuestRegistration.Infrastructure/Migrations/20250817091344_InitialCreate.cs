@@ -3,8 +3,6 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-#pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
-
 namespace GuestRegistration.Infrastructure.Migrations
 {
     /// <inheritdoc />
@@ -91,17 +89,6 @@ namespace GuestRegistration.Infrastructure.Migrations
                         principalTable: "PaymentMethods",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.InsertData(
-                table: "Events",
-                columns: new[] { "Id", "AdditionalInformation", "Location", "Name", "StartTime" },
-                values: new object[,]
-                {
-                    { 1L, null, "Tech Park Tallinn", "Summer Tech Conference", new DateTime(2025, 9, 16, 8, 31, 2, 365, DateTimeKind.Utc).AddTicks(8845) },
-                    { 2L, null, "Virtual Event", "Agile Development Workshop", new DateTime(2025, 11, 15, 8, 31, 2, 365, DateTimeKind.Utc).AddTicks(9250) },
-                    { 3L, null, "Pärnu Hotel", "Winter Code Retreat", new DateTime(2025, 6, 18, 8, 31, 2, 365, DateTimeKind.Utc).AddTicks(9254) },
-                    { 4L, null, "Tartu University", "Project Management Meetup", new DateTime(2025, 4, 19, 8, 31, 2, 365, DateTimeKind.Utc).AddTicks(9255) }
                 });
 
             migrationBuilder.CreateIndex(

@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GuestRegistration.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250817083102_InitialCreate")]
+    [Migration("20250817091344_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -43,36 +43,6 @@ namespace GuestRegistration.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Events");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1L,
-                            Location = "Tech Park Tallinn",
-                            Name = "Summer Tech Conference",
-                            StartTime = new DateTime(2025, 9, 16, 8, 31, 2, 365, DateTimeKind.Utc).AddTicks(8845)
-                        },
-                        new
-                        {
-                            Id = 2L,
-                            Location = "Virtual Event",
-                            Name = "Agile Development Workshop",
-                            StartTime = new DateTime(2025, 11, 15, 8, 31, 2, 365, DateTimeKind.Utc).AddTicks(9250)
-                        },
-                        new
-                        {
-                            Id = 3L,
-                            Location = "Pärnu Hotel",
-                            Name = "Winter Code Retreat",
-                            StartTime = new DateTime(2025, 6, 18, 8, 31, 2, 365, DateTimeKind.Utc).AddTicks(9254)
-                        },
-                        new
-                        {
-                            Id = 4L,
-                            Location = "Tartu University",
-                            Name = "Project Management Meetup",
-                            StartTime = new DateTime(2025, 4, 19, 8, 31, 2, 365, DateTimeKind.Utc).AddTicks(9255)
-                        });
                 });
 
             modelBuilder.Entity("GuestRegistration.Core.Entities.EventParticipant", b =>

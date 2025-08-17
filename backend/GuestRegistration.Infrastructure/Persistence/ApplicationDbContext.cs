@@ -33,40 +33,5 @@ public class ApplicationDbContext : DbContext
             .WithMany(p => p.EventParticipants)
             .HasForeignKey(ep => ep.ParticipantId);
         
-        SeedData(modelBuilder);
-    }
-    
-    private void SeedData(ModelBuilder modelBuilder)
-    {
-        modelBuilder.Entity<Event>().HasData(
-            new Event
-            {
-                Id = 1L,
-                Name = "Summer Tech Conference",
-                StartTime = DateTime.UtcNow.AddDays(30),
-                Location = "Tech Park Tallinn"
-            },
-            new Event
-            {
-                Id = 2L,
-                Name = "Agile Development Workshop",
-                StartTime = DateTime.UtcNow.AddDays(90),
-                Location = "Virtual Event"
-            },
-            new Event
-            {
-                Id = 3L,
-                Name = "Winter Code Retreat",
-                StartTime = DateTime.UtcNow.AddDays(-60),
-                Location = "Pärnu Hotel"
-            },
-            new Event
-            {
-                Id = 4L,
-                Name = "Project Management Meetup",
-                StartTime = DateTime.UtcNow.AddDays(-120),
-                Location = "Tartu University"
-            }
-        );
     }
 }
