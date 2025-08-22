@@ -32,7 +32,12 @@ public class EventRepository : IEventRepository
 
         return await query.ToListAsync();
     }
-    
+
+    public async Task<Event?> GetByIdAsync(long id)
+    {
+        return await _context.Events.FindAsync(id);
+    }
+
     public async Task DeleteEventAsync(long id)
     {
         var eventToDelete = await _context.Events.FindAsync(id);
@@ -41,5 +46,11 @@ public class EventRepository : IEventRepository
             _context.Events.Remove(eventToDelete);
             await _context.SaveChangesAsync();
         }
+    }
+
+    public async Task AddAsync(Event newEvent)
+    {
+        await _context.Events.AddAsync(newEvent);
+        await _context.SaveChangesAsync();
     }
 }

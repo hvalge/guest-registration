@@ -1,10 +1,5 @@
-import pino from 'pino';
+import log from 'loglevel';
 
-const logger = pino({
-  level: 'info',
-  browser: {
-    asObject: true,
-  },
-});
+log.setLevel('info');
 
-export default logger;
+export default log;

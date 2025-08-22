@@ -484,3 +484,9 @@ $RECYCLE.BIN/
 *.swp
 
 # Ignore SQLite database files
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+*.db-shm
+*.db-wal

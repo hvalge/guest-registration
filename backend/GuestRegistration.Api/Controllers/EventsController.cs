@@ -1,4 +1,5 @@
-﻿using GuestRegistration.Application.Services;
+﻿using GuestRegistration.Application.DTOs;
+using GuestRegistration.Application.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace GuestRegistration.Api.Controllers;
@@ -25,13 +26,38 @@ public class EventsController : ApiBaseController
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteEvent(long id)
     {
-        var futureEvent = (await _eventService.GetEventsAsync(true)).Any(e => e.Id == id);
-        if (!futureEvent)
+        var eventToDelete = await _eventService.GetEventByIdAsync(id);
+
+        if (eventToDelete == null)
         {
             return NotFound();
         }
 
+        if (eventToDelete.StartTime < DateTime.UtcNow)
+        {
+            return BadRequest("Past events cannot be deleted.");
+        }
+
         await _eventService.DeleteEventAsync(id);
         return NoContent();
+    }
+    
+    [HttpPost]
+    public async Task<IActionResult> CreateEvent([FromBody] CreateEventDto createEventDto)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
+        try
+        {
+            await _eventService.CreateEventAsync(createEventDto);
+            return Ok();
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
     }
 }

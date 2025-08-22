@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import type { EventSummary } from '../types/event';
 import { deleteEvent } from '../services/eventService';
 import logger from '../services/logger';
@@ -24,7 +25,7 @@ const EventList: React.FC<EventListProps> = ({ title, events, showDelete = false
           onEventDeleted(id);
         }
       } catch (error) {
-        logger.error(error, `Failed to delete event with ID: ${id}`);
+        logger.error(`Failed to delete event with ID: ${id}`, error);
         alert('Failed to delete event.');
       }
     }
@@ -51,6 +52,11 @@ const EventList: React.FC<EventListProps> = ({ title, events, showDelete = false
           <li className="list-group-item">Üritusi ei leitud.</li>
         )}
       </ul>
+      {showDelete && (
+        <div className="card-footer bg-white border-0 text-start">
+          <Link to="/add-event" className="btn btn-link">LISA ÜRITUS</Link>
+        </div>
+      )}
     </div>
   );
 };
