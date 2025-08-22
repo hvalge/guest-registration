@@ -3,9 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace GuestRegistration.Api.Controllers;
 
-[ApiController]
-[Route("[controller]")]
-public class EventsController : ControllerBase
+public class EventsController : ApiBaseController
 {
     private readonly EventService _eventService;
 
