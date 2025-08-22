@@ -9,3 +9,7 @@ export const getEvents = async (view: 'future' | 'past'): Promise<EventSummary[]
   });
   return response.data;
 };
+
+export const deleteEvent = async (id: number): Promise<void> => {
+  await axios.delete(`${API_URL}/${id}`);
+};

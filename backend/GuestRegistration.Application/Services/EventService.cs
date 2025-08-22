@@ -27,4 +27,9 @@ public class EventService
 
         return eventDtos;
     }
+    
+    public async Task DeleteEventAsync(long id)
+    {
+        await _eventRepository.DeleteEventAsync(id);
+    }
 }

@@ -21,4 +21,17 @@ public class EventsController : ApiBaseController
         
         return Ok(events);
     }
+    
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> DeleteEvent(long id)
+    {
+        var futureEvent = (await _eventService.GetEventsAsync(true)).Any(e => e.Id == id);
+        if (!futureEvent)
+        {
+            return NotFound();
+        }
+
+        await _eventService.DeleteEventAsync(id);
+        return NoContent();
+    }
 }

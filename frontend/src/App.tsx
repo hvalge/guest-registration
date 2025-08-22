@@ -38,6 +38,10 @@ function App() {
     loadEvents();
   }, []);
 
+  const handleEventDeleted = (id: number) => {
+  setFutureEvents(futureEvents.filter(event => event.id !== id));
+  };
+
   return (
     <>
       <Header />
@@ -50,11 +54,11 @@ function App() {
         {!isLoading && !error && (
           <div className="row">
             <div className="col-lg-6 mb-4">
-              <EventList title="Tulevased üritused" events={futureEvents} showDelete={true} />
+              <EventList title="Tulevased üritused" events={futureEvents} showDelete={true} onEventDeleted={handleEventDeleted}  />
               <a href="#" className="btn btn-link mt-2">LISA ÜRITUS</a>
             </div>
             <div className="col-lg-6 mb-4">
-              <EventList title="Toimunud üritused" events={pastEvents} />
+              <EventList title="Toimunud üritused" events={pastEvents} onEventDeleted={handleEventDeleted}  />
             </div>
           </div>
         )}
