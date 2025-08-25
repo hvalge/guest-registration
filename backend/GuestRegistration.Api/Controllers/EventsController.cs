@@ -23,6 +23,24 @@ public class EventsController : ApiBaseController
         return Ok(events);
     }
     
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetEventDetails(long id)
+    {
+        var eventDetails = await _eventService.GetEventDetailsAsync(id);
+        if (eventDetails == null)
+        {
+            return NotFound();
+        }
+        return Ok(eventDetails);
+    }
+    
+    [HttpDelete("{eventId}/participants/{participantId}")]
+    public async Task<IActionResult> DeleteParticipant(long eventId, long participantId)
+    {
+        await _eventService.RemoveParticipantFromEventAsync(eventId, participantId);
+        return NoContent();
+    }
+    
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteEvent(long id)
     {

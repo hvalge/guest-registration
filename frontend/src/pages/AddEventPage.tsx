@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createEvent } from '../services/eventService';
 import logger from '../services/logger';
@@ -10,6 +10,14 @@ const AddEventPage: React.FC = () => {
   const [additionalInformation, setAdditionalInformation] = useState('');
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
+
+  const getLocalDateTime = () => {
+    const now = new Date();
+    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+    return now.toISOString().slice(0, 16);
+  };
+
+  const minDateTime = useMemo(() => getLocalDateTime(), []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -65,6 +73,7 @@ const AddEventPage: React.FC = () => {
                 id="startTime"
                 value={startTime}
                 onChange={(e) => setStartTime(e.target.value)}
+                min={minDateTime}
                 required
               />
             </div>

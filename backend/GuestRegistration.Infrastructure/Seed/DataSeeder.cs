@@ -19,32 +19,59 @@ public static class DataSeeder
         {
             return; 
         }
-
+        
+        var paymentMethod1 = new PaymentMethod { Name = "Pangaülekanne" };
+        var paymentMethod2 = new PaymentMethod { Name = "Sularaha" };
+        
+        var naturalPerson1 = new NaturalPerson { FirstName = "Mari", LastName = "Maasikas", IdCode = "49001011234" };
+        var naturalPerson2 = new NaturalPerson { FirstName = "Kalle", LastName = "Kask", IdCode = "38502022345" };
+        var legalPerson1 = new LegalPerson { CompanyName = "Innovatsioon OÜ", RegisterCode = "12345678" };
+        var legalPerson2 = new LegalPerson { CompanyName = "Arendus AS", RegisterCode = "87654321" };
+        
         var events = new List<Event>
         {
-            new Event
+            new()
             {
-                Name = "Summer Tech Conference",
+                Name = "Suvine Tehnoloogiakonverents",
                 StartTime = DateTime.UtcNow.AddDays(30),
-                Location = "Tech Park Tallinn"
+                Location = "Tehnopol, Tallinn",
+                EventParticipants = new List<EventParticipant>
+                {
+                    new() { Participant = naturalPerson1, PaymentMethod = paymentMethod1 },
+                    new() { Participant = legalPerson1, PaymentMethod = paymentMethod1, NumberOfAttendees = 5 }
+                }
             },
-            new Event
+            new()
             {
-                Name = "Agile Development Workshop",
+                Name = "Agiilse Arenduse Töötuba",
                 StartTime = DateTime.UtcNow.AddDays(90),
-                Location = "Virtual Event"
+                Location = "Virtuaalne üritus",
+                 EventParticipants = new List<EventParticipant>
+                {
+                    new() { Participant = naturalPerson2, PaymentMethod = paymentMethod2 },
+                    new() { Participant = legalPerson2, PaymentMethod = paymentMethod1, NumberOfAttendees = 2 }
+                }
             },
-            new Event
+            new()
             {
-                Name = "Winter Code Retreat",
+                Name = "Talvine Häkaton",
                 StartTime = DateTime.UtcNow.AddDays(-60),
-                Location = "Pärnu Hotel"
+                Location = "Pärnu hotell",
+                EventParticipants = new List<EventParticipant>
+                {
+                    new() { Participant = naturalPerson2, PaymentMethod = paymentMethod2 }
+                }
             },
-            new Event
+            new()
             {
-                Name = "Project Management Meetup",
+                Name = "Projektijuhtimise Meetup",
                 StartTime = DateTime.UtcNow.AddDays(-120),
-                Location = "Tartu University"
+                Location = "Tartu Ülikool",
+                EventParticipants = new List<EventParticipant>
+                {
+                    new() { Participant = naturalPerson1, PaymentMethod = paymentMethod1 },
+                    new() { Participant = legalPerson2, PaymentMethod = paymentMethod1, NumberOfAttendees = 10 }
+                }
             }
         };
 

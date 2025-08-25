@@ -33,6 +33,38 @@ public class EventService
     {
         return await _eventRepository.GetByIdAsync(id);
     }
+    
+    public async Task<EventDetailsDto?> GetEventDetailsAsync(long id)
+    {
+        var eventEntity = await _eventRepository.GetByIdWithParticipantsAsync(id);
+        if (eventEntity == null)
+        {
+            return null;
+        }
+
+        var eventDetailsDto = new EventDetailsDto
+        {
+            Id = eventEntity.Id,
+            Name = eventEntity.Name,
+            Participants = eventEntity.EventParticipants.Select(ep =>
+            {
+                var participant = ep.Participant;
+                return new ParticipantDto
+                {
+                    Id = participant.Id,
+                    Name = participant is NaturalPerson np ? $"{np.FirstName} {np.LastName}" : ((LegalPerson)participant).CompanyName,
+                    Code = participant is NaturalPerson np2 ? np2.IdCode : ((LegalPerson)participant).RegisterCode
+                };
+            }).ToList()
+        };
+        
+        return eventDetailsDto;
+    }
+    
+    public async Task RemoveParticipantFromEventAsync(long eventId, long participantId)
+    {
+        await _eventRepository.RemoveParticipantAsync(eventId, participantId);
+    }
 
     public async Task DeleteEventAsync(long id)
     {
