@@ -41,19 +41,19 @@
   color: #888;
 }
 
-/* src/App.css */
+
 body {
-  background-color: #f0f0f0; /* Light grey background for the page */
+  background-color: #f0f0f0;
 }
 
 .footer {
-  background-color: #343a40; /* Dark background for the footer */
+  background-color: #343a40;
   color: white;
   padding: 2rem 0;
 }
 
 .event-list-header {
-  background-color: #004a99; /* Blue header for the event lists */
+  background-color: #004a99;
   color: white;
 }
 

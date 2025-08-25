@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { getEventDetails, deleteParticipant } from '../services/eventService';
 import type { EventDetails as EventDetailsType, Participant } from '../types/event';
 import logger from '../services/logger';
+import PageBanner from '../components/PageBanner';
 
 const EventDetailsPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -55,13 +56,7 @@ const EventDetailsPage: React.FC = () => {
 
   return (
     <div className="container my-4">
-      <div className="p-4" style={{ 
-        backgroundImage: `url('https://rik.ee/sites/default/files/2022-03/header_ylapilt_roheline.jpg')`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center'
-      }}>
-        <h2 className="text-white">{eventDetails.name}</h2>
-      </div>
+      <PageBanner title="Osavõtjate info"/>
       <div className="card p-4">
         <h3>Osavõtjad</h3>
         <table className="table">
@@ -84,8 +79,9 @@ const EventDetailsPage: React.FC = () => {
             ))}
           </tbody>
         </table>
-        <div className="mt-3">
+        <div className="mt-3 d-flex justify-content-between">
           <button className="btn btn-secondary" onClick={() => navigate('/')}>Tagasi</button>
+          <Link to={`/events/${id}/add-participant`} className="btn btn-primary">Lisa osavõtja</Link>
         </div>
       </div>
     </div>

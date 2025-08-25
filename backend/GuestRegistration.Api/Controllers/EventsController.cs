@@ -4,7 +4,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace GuestRegistration.Api.Controllers;
 
-public class EventsController : ApiBaseController
+[ApiController]
+[Route("api")]
+public class EventsController : ControllerBase
 {
     private readonly EventService _eventService;
 
@@ -13,7 +15,7 @@ public class EventsController : ApiBaseController
         _eventService = eventService;
     }
 
-    [HttpGet(Name = "GetEvents")]
+    [HttpGet("events")]
     public async Task<IActionResult> GetEvents([FromQuery] string view = "future")
     {
         bool showFutureEvents = !string.Equals(view, "past", StringComparison.OrdinalIgnoreCase);
@@ -23,7 +25,7 @@ public class EventsController : ApiBaseController
         return Ok(events);
     }
     
-    [HttpGet("{id}")]
+    [HttpGet("events/{id}")]
     public async Task<IActionResult> GetEventDetails(long id)
     {
         var eventDetails = await _eventService.GetEventDetailsAsync(id);
@@ -34,14 +36,14 @@ public class EventsController : ApiBaseController
         return Ok(eventDetails);
     }
     
-    [HttpDelete("{eventId}/participants/{participantId}")]
+    [HttpDelete("events/{eventId}/participants/{participantId}")]
     public async Task<IActionResult> DeleteParticipant(long eventId, long participantId)
     {
         await _eventService.RemoveParticipantFromEventAsync(eventId, participantId);
         return NoContent();
     }
     
-    [HttpDelete("{id}")]
+    [HttpDelete("events/{id}")]
     public async Task<IActionResult> DeleteEvent(long id)
     {
         var eventToDelete = await _eventService.GetEventByIdAsync(id);
@@ -60,7 +62,7 @@ public class EventsController : ApiBaseController
         return NoContent();
     }
     
-    [HttpPost]
+    [HttpPost("events")]
     public async Task<IActionResult> CreateEvent([FromBody] CreateEventDto createEventDto)
     {
         if (!ModelState.IsValid)

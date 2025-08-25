@@ -1,7 +1,8 @@
 import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { createEvent } from '../services/eventService';
+import { createEvent } from '../services/eventService'
 import logger from '../services/logger';
+import PageBanner from '../components/PageBanner';
 
 const AddEventPage: React.FC = () => {
   const [name, setName] = useState('');
@@ -38,15 +39,10 @@ const AddEventPage: React.FC = () => {
     }
   };
 
+
   return (
     <div className="container my-4">
-      <div className="p-4" style={{ 
-        backgroundImage: `url('https://rik.ee/sites/default/files/2022-03/header_ylapilt_roheline.jpg')`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center'
-      }}>
-        <h2 className="text-white">Ürituse lisamine</h2>
-      </div>
+      <PageBanner title="Ürituse lisamine" />
       <div className="card p-4">
         <form onSubmit={handleSubmit}>
           {error && <div className="alert alert-danger">{error}</div>}

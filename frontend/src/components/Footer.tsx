@@ -1,6 +1,6 @@
 const Footer = () => {
   return (
-    <footer className="footer mt-auto">
+    <footer className="footer">
       <div className="container">
         <div className="row">
           <div className="col-md-3">
@@ -22,7 +22,7 @@ const Footer = () => {
             </ul>
           </div>
           <div className="col-md-6">
-            <h5>Kontakt</h5>
+            <h5 className="text-start">Kontakt</h5>
             <div className="row">
               <div className="col-sm-6">
                 <strong>Peakontor: Tallinnas</strong><br />
