@@ -96,7 +96,7 @@ public class EventServiceTests
     [Fact]
     public async Task DeleteEventAsync_WhenEventNotFound_ThrowsNotFoundException()
     {
-        _eventRepositoryMock.Setup(r => r.GetByIdAsync(It.IsAny<long>())).ReturnsAsync((Event)null);
+        _eventRepositoryMock.Setup(r => r.GetByIdAsync(It.IsAny<long>())).ReturnsAsync((Event)null!);
         
         await Assert.ThrowsAsync<NotFoundException>(() => _eventService.DeleteEventAsync(1));
     }
