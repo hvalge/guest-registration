@@ -35,7 +35,10 @@ builder.Host.UseSerilog((context, services, configuration) => configuration
 
 var app = builder.Build();
 
-await DataSeeder.SeedAsync(app);
+if (app.Environment.EnvironmentName != "Testing")
+{
+    await DataSeeder.SeedAsync(app);
+}
 
 if (app.Environment.IsDevelopment())
 {
@@ -55,3 +58,5 @@ app.MapControllers();
 app.MapHealthChecks("/health");
 
 app.Run();
+
+public partial class Program { }
