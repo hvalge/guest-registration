@@ -1,5 +1,5 @@
 ﻿using System.Text.Json;
-using GuestRegistration.Application.Exceptions; // Your custom exceptions
+using GuestRegistration.Application.Exceptions;
 
 namespace GuestRegistration.Api.Middleware;
 
