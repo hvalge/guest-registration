@@ -4,7 +4,7 @@ import { getPaymentMethods, addParticipant, type CreateParticipantData } from '.
 import type { PaymentMethod } from '../types/paymentMethod';
 import logger from '../services/logger';
 import { isAxiosError } from 'axios';
-import backgroundImage from '../assets/libled.jpg'
+import PageBanner from '../components/PageBanner';
 
 const AddParticipantPage: React.FC = () => {
   const { eventId } = useParams<{ eventId: string }>();
@@ -31,6 +31,11 @@ const AddParticipantPage: React.FC = () => {
     };
     loadPaymentMethods();
   }, []);
+
+  const handleTypeChange = (type: 'NaturalPerson' | 'LegalPerson') => {
+    setParticipantType(type);
+    setFormData({ paymentMethodId: formData.paymentMethodId });
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -65,25 +70,19 @@ const AddParticipantPage: React.FC = () => {
   };
 
   return (
-    <div className="container my-4">
-      <div className="p-4" style={{ 
-        backgroundImage: `url(${backgroundImage})`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center'
-      }}>
-        <h2 className="text-white">Osavõtja lisamine</h2>
-      </div>
-      <div className="card p-4">
+    <div className="container-lg my-4">
+      <PageBanner title="Osavõtja lisamine" />
+      <div className="card p-4 border-top-0 mt-4">
         <form onSubmit={handleSubmit}>
           {error && <div className="alert alert-danger">{error}</div>}
           
           <div className="mb-3">
             <div className="form-check form-check-inline">
-              <input className="form-check-input" type="radio" name="participantType" id="naturalPerson" value="NaturalPerson" checked={participantType === 'NaturalPerson'} onChange={() => setParticipantType('NaturalPerson')} />
+              <input className="form-check-input" type="radio" name="participantType" id="naturalPerson" value="NaturalPerson" checked={participantType === 'NaturalPerson'} onChange={() => handleTypeChange('NaturalPerson')} />
               <label className="form-check-label" htmlFor="naturalPerson">Eraisik</label>
             </div>
             <div className="form-check form-check-inline">
-              <input className="form-check-input" type="radio" name="participantType" id="legalPerson" value="LegalPerson" checked={participantType === 'LegalPerson'} onChange={() => setParticipantType('LegalPerson')} />
+              <input className="form-check-input" type="radio" name="participantType" id="legalPerson" value="LegalPerson" checked={participantType === 'LegalPerson'} onChange={() => handleTypeChange('LegalPerson')} />
               <label className="form-check-label" htmlFor="legalPerson">Ettevõte</label>
             </div>
           </div>
@@ -92,30 +91,30 @@ const AddParticipantPage: React.FC = () => {
             <>
               <div className="mb-3 row">
                 <label className="col-sm-3 col-form-label">Eesnimi:</label>
-                <div className="col-sm-9"><input type="text" name="firstName" className="form-control" onChange={handleChange} required /></div>
+                <div className="col-sm-9"><input type="text" name="firstName" className="form-control" onChange={handleChange} value={formData.firstName || ''} required /></div>
               </div>
               <div className="mb-3 row">
                 <label className="col-sm-3 col-form-label">Perekonnanimi:</label>
-                <div className="col-sm-9"><input type="text" name="lastName" className="form-control" onChange={handleChange} required /></div>
+                <div className="col-sm-9"><input type="text" name="lastName" className="form-control" onChange={handleChange} value={formData.lastName || ''} required /></div>
               </div>
               <div className="mb-3 row">
                 <label className="col-sm-3 col-form-label">Isikukood:</label>
-                <div className="col-sm-9"><input type="text" name="idCode" className="form-control" onChange={handleChange} required pattern="[1-6]\d{10}" /></div>
+                <div className="col-sm-9"><input type="text" name="idCode" className="form-control" onChange={handleChange} value={formData.idCode || ''} required pattern="[1-6]\d{10}" /></div>
               </div>
             </>
           ) : (
             <>
               <div className="mb-3 row">
                 <label className="col-sm-3 col-form-label">Juriidiline nimi:</label>
-                <div className="col-sm-9"><input type="text" name="companyName" className="form-control" onChange={handleChange} required /></div>
+                <div className="col-sm-9"><input type="text" name="companyName" className="form-control" onChange={handleChange} value={formData.companyName || ''} required /></div>
               </div>
               <div className="mb-3 row">
                 <label className="col-sm-3 col-form-label">Registrikood:</label>
-                <div className="col-sm-9"><input type="text" name="registerCode" className="form-control" onChange={handleChange} required pattern="\d{8}" /></div>
+                <div className="col-sm-9"><input type="text" name="registerCode" className="form-control" onChange={handleChange} value={formData.registerCode || ''} required pattern="\d{8}" /></div>
               </div>
               <div className="mb-3 row">
                 <label className="col-sm-3 col-form-label">Osavõtjate arv:</label>
-                <div className="col-sm-9"><input type="number" name="numberOfAttendees" className="form-control" onChange={handleChange} min="1" required /></div>
+                <div className="col-sm-9"><input type="number" name="numberOfAttendees" className="form-control" onChange={handleChange} value={formData.numberOfAttendees || ''} min="1" required /></div>
               </div>
             </>
           )}
@@ -139,6 +138,7 @@ const AddParticipantPage: React.FC = () => {
                 className="form-control" 
                 rows={3} 
                 onChange={handleChange}
+                value={(participantType === 'NaturalPerson' ? formData.additionalInformationNatural : formData.additionalInformationLegal) || ''}
                 maxLength={participantType === 'NaturalPerson' ? 1500 : 5000}
               ></textarea>
             </div>

@@ -61,11 +61,64 @@ public class ParticipantService
         eventEntity.EventParticipants.Add(eventParticipant);
         await _participantRepository.AddAsync(participant);
     }
+    
+    public async Task<ParticipantDetailDto?> GetParticipantDetailsAsync(long eventId, long participantId)
+        {
+            var eventParticipant = await _participantRepository.GetEventParticipantAsync(eventId, participantId);
+            if (eventParticipant == null) return null;
 
-    public async Task<List<PaymentMethod>> GetPaymentMethodsAsync()
-    {
-        return await _participantRepository.GetPaymentMethodsAsync();
-    }
+            var participant = eventParticipant.Participant;
+            var dto = new ParticipantDetailDto
+            {
+                Id = participant.Id,
+                PaymentMethodId = eventParticipant.PaymentMethodId,
+                AdditionalInformation = eventParticipant.AdditionalInformation
+            };
+
+            if (participant is NaturalPerson np)
+            {
+                dto.Type = Core.Enums.ParticipantType.NaturalPerson;
+                dto.FirstName = np.FirstName;
+                dto.LastName = np.LastName;
+                dto.IdCode = np.IdCode;
+            }
+            else if (participant is LegalPerson lp)
+            {
+                dto.Type = Core.Enums.ParticipantType.LegalPerson;
+                dto.CompanyName = lp.CompanyName;
+                dto.RegisterCode = lp.RegisterCode;
+                dto.NumberOfAttendees = eventParticipant.NumberOfAttendees;
+            }
+
+            return dto;
+        }
+
+        public async Task UpdateParticipantDetailsAsync(long eventId, long participantId, UpdateParticipantDto dto)
+        {
+            var eventParticipant = await _participantRepository.GetEventParticipantAsync(eventId, participantId);
+            if (eventParticipant == null) throw new Exception("Participant not found in this event.");
+
+            var participant = eventParticipant.Participant;
+
+            if (dto.Type == Core.Enums.ParticipantType.NaturalPerson && participant is NaturalPerson np)
+            {
+                np.FirstName = dto.FirstName!;
+                np.LastName = dto.LastName!;
+                np.IdCode = dto.IdCode!;
+            }
+            else if (dto.Type == Core.Enums.ParticipantType.LegalPerson && participant is LegalPerson lp)
+            {
+                lp.CompanyName = dto.CompanyName!;
+                lp.RegisterCode = dto.RegisterCode!;
+                eventParticipant.NumberOfAttendees = dto.NumberOfAttendees;
+            }
+
+            eventParticipant.PaymentMethodId = dto.PaymentMethodId;
+            eventParticipant.AdditionalInformation = dto.AdditionalInformation;
+
+            await _participantRepository.UpdateAsync(eventParticipant);
+        }
+    
 
     private bool IsValidEstonianIdCode(string idCode)
     {

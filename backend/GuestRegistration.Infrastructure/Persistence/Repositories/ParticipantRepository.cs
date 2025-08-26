@@ -19,8 +19,16 @@ public class ParticipantRepository : IParticipantRepository
         await _context.SaveChangesAsync();
     }
 
-    public async Task<List<PaymentMethod>> GetPaymentMethodsAsync()
+    public async Task<EventParticipant?> GetEventParticipantAsync(long eventId, long participantId)
     {
-        return await _context.PaymentMethods.ToListAsync();
+        return await _context.EventParticipants
+            .Include(ep => ep.Participant)
+            .FirstOrDefaultAsync(ep => ep.EventId == eventId && ep.ParticipantId == participantId);
+    }
+
+    public async Task UpdateAsync(EventParticipant eventParticipant)
+    {
+        _context.EventParticipants.Update(eventParticipant);
+        await _context.SaveChangesAsync();
     }
 }

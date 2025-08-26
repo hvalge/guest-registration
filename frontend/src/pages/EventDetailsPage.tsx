@@ -56,8 +56,8 @@ const EventDetailsPage: React.FC = () => {
 
   return (
     <div className="container my-4">
-      <PageBanner title="Osavõtjate info"/>
-      <div className="card p-4">
+      <PageBanner title="Osavõtjate info" />
+      <div className="card p-4 border-top-0 mt-4">
         <h3>Osavõtjad</h3>
         <table className="table">
           <thead>
@@ -70,7 +70,9 @@ const EventDetailsPage: React.FC = () => {
           <tbody>
             {eventDetails.participants.map((participant: Participant) => (
               <tr key={participant.id}>
-                <td>{participant.name}</td>
+                <td>
+                  <Link to={`/events/${id}/participants/${participant.id}`}>{participant.name}</Link>
+                </td>
                 <td>{participant.code}</td>
                 <td className="text-end">
                   <button onClick={() => handleParticipantDelete(participant.id)} className="btn btn-danger btn-sm">Kustuta</button>

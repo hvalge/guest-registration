@@ -8,6 +8,7 @@ import HomePage from './pages/HomePage';
 import AddEventPage from './pages/AddEventPage';
 import EventDetailsPage from './pages/EventDetailsPage';
 import AddParticipantPage from './pages/AddParticipantPage';
+import ParticipantDetailsPage from './pages/ParticipantDetailsPage';
 
 function App() {
   return (
@@ -20,6 +21,7 @@ function App() {
             <Route path="/add-event" element={<AddEventPage />} />
             <Route path="/events/:id" element={<EventDetailsPage />} />
             <Route path="/events/:eventId/add-participant" element={<AddParticipantPage />} />
+            <Route path="/events/:eventId/participants/:participantId" element={<ParticipantDetailsPage />} />
           </Routes>
         </main>
         <Footer />

@@ -1,10 +1,10 @@
 ﻿using GuestRegistration.Core.Entities;
 
-namespace GuestRegistration.Core.Interfaces
+namespace GuestRegistration.Core.Interfaces;
+
+public interface IParticipantRepository
 {
-    public interface IParticipantRepository
-    {
-        Task AddAsync(Participant participant);
-        Task<List<PaymentMethod>> GetPaymentMethodsAsync();
-    }
+    Task AddAsync(Participant participant);
+    Task<EventParticipant?> GetEventParticipantAsync(long eventId, long participantId);
+    Task UpdateAsync(EventParticipant eventParticipant);
 }
