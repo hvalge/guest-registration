@@ -3,6 +3,7 @@ using GuestRegistration.Application.Services;
 using GuestRegistration.Core.Entities;
 using GuestRegistration.Core.Enums;
 using GuestRegistration.Core.Interfaces;
+using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
 
@@ -18,7 +19,12 @@ public class ParticipantServiceTests
     {
         _participantRepositoryMock = new Mock<IParticipantRepository>();
         _eventRepositoryMock = new Mock<IEventRepository>();
-        _participantService = new ParticipantService(_participantRepositoryMock.Object, _eventRepositoryMock.Object);
+        var loggerMock = new Mock<ILogger<ParticipantService>>();
+        
+        _participantService = new ParticipantService(
+            _participantRepositoryMock.Object, 
+            _eventRepositoryMock.Object, 
+            loggerMock.Object);
     }
 
     [Fact]
@@ -57,7 +63,10 @@ public class ParticipantServiceTests
 
         var eventEntity = new Event { Id = eventId };
         _eventRepositoryMock.Setup(r => r.GetByIdAsync(eventId)).ReturnsAsync(eventEntity);
-        _participantRepositoryMock.Setup(r => r.AddAsync(It.IsAny<Participant>())).Returns(Task.CompletedTask);
+
+        _participantRepositoryMock.Setup(r => r.AddAsync(It.IsAny<Participant>()))
+            .Callback<Participant>(p => _ = p)
+            .Returns(Task.CompletedTask);
         
         await _participantService.AddParticipantToEventAsync(eventId, dto);
         

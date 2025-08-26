@@ -1,23 +1,29 @@
 ﻿using GuestRegistration.Application.DTOs;
+using GuestRegistration.Application.Exceptions;
 using GuestRegistration.Core.Entities;
 using GuestRegistration.Core.Interfaces;
+using Microsoft.Extensions.Logging;
+using ValidationException = GuestRegistration.Application.Exceptions.ValidationException;
 
 namespace GuestRegistration.Application.Services;
 
 public class EventService
 {
     private readonly IEventRepository _eventRepository;
+    private readonly ILogger<EventService> _logger;
 
-    public EventService(IEventRepository eventRepository)
+    public EventService(IEventRepository eventRepository, ILogger<EventService> logger)
     {
         _eventRepository = eventRepository;
+        _logger = logger;
     }
 
     public async Task<IEnumerable<EventSummaryDto>> GetEventsAsync(bool showFutureEvents)
     {
+        _logger.LogInformation("Fetching {EventType} events", showFutureEvents ? "future" : "past");
         var events = await _eventRepository.GetEventsAsync(showFutureEvents);
         
-        var eventDtos = events.Select(e => new EventSummaryDto
+        return events.Select(e => new EventSummaryDto
         {
             Id = e.Id,
             Name = e.Name,
@@ -25,24 +31,19 @@ public class EventService
             Location = e.Location,
             ParticipantCount = e.EventParticipants.Count
         });
+    }
 
-        return eventDtos;
-    }
-    
-    public async Task<Event?> GetEventByIdAsync(long id)
-    {
-        return await _eventRepository.GetByIdAsync(id);
-    }
-    
     public async Task<EventDetailsDto?> GetEventDetailsAsync(long id)
     {
+        _logger.LogInformation("Fetching event details for event ID: {EventId}", id);
         var eventEntity = await _eventRepository.GetByIdWithParticipantsAsync(id);
         if (eventEntity == null)
         {
+            _logger.LogWarning("Event with ID: {EventId} not found", id);
             return null;
         }
-
-        var eventDetailsDto = new EventDetailsDto
+        
+        return new EventDetailsDto
         {
             Id = eventEntity.Id,
             Name = eventEntity.Name,
@@ -57,27 +58,17 @@ public class EventService
                 };
             }).ToList()
         };
-        
-        return eventDetailsDto;
-    }
-    
-    public async Task RemoveParticipantFromEventAsync(long eventId, long participantId)
-    {
-        await _eventRepository.RemoveParticipantAsync(eventId, participantId);
     }
 
-    public async Task DeleteEventAsync(long id)
+    public async Task<EventDetailsDto> CreateEventAsync(CreateEventDto createEventDto)
     {
-        await _eventRepository.DeleteEventAsync(id);
-    }
-
-    public async Task CreateEventAsync(CreateEventDto createEventDto)
-    {
+        _logger.LogInformation("Creating a new event with name: {EventName}", createEventDto.Name);
         if (createEventDto.StartTime < DateTime.UtcNow)
         {
-            throw new ArgumentException("Event start time must be in the future.");
+            _logger.LogWarning("Attempted to create an event in the past: {EventStartTime}", createEventDto.StartTime);
+            throw new ValidationException("Event start time must be in the future.");
         }
-        
+
         var newEvent = new Event
         {
             Name = createEventDto.Name,
@@ -87,5 +78,27 @@ public class EventService
         };
 
         await _eventRepository.AddAsync(newEvent);
+        _logger.LogInformation("Successfully created event {EventName} with ID {EventId}", newEvent.Name, newEvent.Id);
+        
+        return (await GetEventDetailsAsync(newEvent.Id))!;
+    }
+    
+    public async Task DeleteEventAsync(long id)
+    {
+        _logger.LogInformation("Deleting event with ID: {EventId}", id);
+        var eventToDelete = await _eventRepository.GetByIdAsync(id);
+
+        if (eventToDelete == null)
+        {
+            throw new NotFoundException($"Event with ID {id} not found.");
+        }
+
+        if (eventToDelete.StartTime < DateTime.UtcNow)
+        {
+            throw new BusinessRuleValidationException("Cannot delete an event that has already started.");
+        }
+        
+        await _eventRepository.DeleteEventAsync(id);
+        _logger.LogInformation("Event with ID: {EventId} deleted", id);
     }
 }

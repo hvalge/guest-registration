@@ -1,11 +1,12 @@
 ﻿using GuestRegistration.Application.DTOs;
 using GuestRegistration.Application.Services;
+using GuestRegistration.Core.Enums;
 using Microsoft.AspNetCore.Mvc;
 
 namespace GuestRegistration.Api.Controllers;
 
 [ApiController]
-[Route("api")]
+[Route("api/events")]
 public class EventsController : ControllerBase
 {
     private readonly EventService _eventService;
@@ -15,69 +16,47 @@ public class EventsController : ControllerBase
         _eventService = eventService;
     }
 
-    [HttpGet("events")]
-    public async Task<IActionResult> GetEvents([FromQuery] string view = "future")
+    [HttpGet]
+    [ProducesResponseType(typeof(IEnumerable<EventSummaryDto>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetEvents([FromQuery] EventView view = EventView.Future)
     {
-        bool showFutureEvents = !string.Equals(view, "past", StringComparison.OrdinalIgnoreCase);
+        bool showFutureEvents = (view == EventView.Future);
 
         var events = await _eventService.GetEventsAsync(showFutureEvents);
         
         return Ok(events);
     }
     
-    [HttpGet("events/{eventId}")]
+    [HttpGet("{id}")]
+    [ProducesResponseType(typeof(EventDetailsDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetEventDetails(long id)
     {
         var eventDetails = await _eventService.GetEventDetailsAsync(id);
         if (eventDetails == null)
         {
-            return NotFound();
+            return NotFound($"Event with ID {id} not found.");
         }
         return Ok(eventDetails);
     }
     
-    [HttpDelete("events/{eventId}/participants/{participantId}")]
-    public async Task<IActionResult> DeleteParticipant(long eventId, long participantId)
-    {
-        await _eventService.RemoveParticipantFromEventAsync(eventId, participantId);
-        return NoContent();
-    }
-    
-    [HttpDelete("events/{eventId}")]
-    public async Task<IActionResult> DeleteEvent(long id)
-    {
-        var eventToDelete = await _eventService.GetEventByIdAsync(id);
-
-        if (eventToDelete == null)
-        {
-            return NotFound();
-        }
-
-        if (eventToDelete.StartTime < DateTime.UtcNow)
-        {
-            return BadRequest("Past events cannot be deleted.");
-        }
-
-        await _eventService.DeleteEventAsync(id);
-        return NoContent();
-    }
-    
-    [HttpPost("events")]
+    [HttpPost]
+    [ProducesResponseType(typeof(EventDetailsDto), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> CreateEvent([FromBody] CreateEventDto createEventDto)
     {
-        if (!ModelState.IsValid)
-        {
-            return BadRequest(ModelState);
-        }
-
-        try
-        {
-            await _eventService.CreateEventAsync(createEventDto);
-            return Ok();
-        }
-        catch (ArgumentException ex)
-        {
-            return BadRequest(ex.Message);
-        }
+        var newEvent = await _eventService.CreateEventAsync(createEventDto);
+        
+        return CreatedAtAction(nameof(GetEventDetails), new { id = newEvent.Id }, newEvent);
+    }
+    
+    [HttpDelete("{id}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> DeleteEvent(long id)
+    {
+        await _eventService.DeleteEventAsync(id);
+        return NoContent();
     }
 }

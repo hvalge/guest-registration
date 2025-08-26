@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+using GuestRegistration.Api.Middleware;
 using GuestRegistration.Application.Services;
 using GuestRegistration.Core.Interfaces;
 using GuestRegistration.Infrastructure.Persistence;
@@ -25,7 +27,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 builder.Services.AddControllers().AddJsonOptions(options =>
 {
-    options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
+    options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
 });
 
 builder.Host.UseSerilog((context, services, configuration) => configuration
@@ -48,6 +50,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseSerilogRequestLogging();
+
+app.UseGlobalExceptionHandler();
 
 app.UseHttpsRedirection();
 

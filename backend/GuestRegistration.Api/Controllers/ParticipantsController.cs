@@ -1,31 +1,38 @@
 ﻿using GuestRegistration.Application.DTOs;
+using GuestRegistration.Application.Exceptions;
 using GuestRegistration.Application.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace GuestRegistration.Api.Controllers;
 
 [ApiController]
-[Route("api")]
+[Route("api/events/{eventId}/participants")]
 public class ParticipantsController : ControllerBase
 {
     private readonly ParticipantService _participantService;
-    private readonly ILogger<ParticipantsController> _logger;
-    
-    public ParticipantsController(ParticipantService participantService, ILogger<ParticipantsController> logger)
+
+    public ParticipantsController(ParticipantService participantService)
     {
         _participantService = participantService;
-        _logger = logger;
     }
 
-    [HttpGet("events/{eventId}/participants/{participantId}")]
+    [HttpGet("{participantId}")]
+    [ProducesResponseType(typeof(ParticipantDetailDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetParticipantDetails(long eventId, long participantId)
     {
         var details = await _participantService.GetParticipantDetailsAsync(eventId, participantId);
-        if (details == null) return NotFound();
+        if (details == null)
+        {
+            return NotFound($"Participant {participantId} not found in event {eventId}.");
+        }
         return Ok(details);
     }
-    
-    [HttpPost("events/{eventId}/participants")]
+
+    [HttpPost]
+    [ProducesResponseType(typeof(ParticipantDetailDto), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> AddParticipant(long eventId, [FromBody] CreateParticipantDto dto)
     {
         if (!ModelState.IsValid)
@@ -33,31 +40,41 @@ public class ParticipantsController : ControllerBase
             return BadRequest(ModelState);
         }
 
-        try
-        {
-            await _participantService.AddParticipantToEventAsync(eventId, dto);
-            return Ok();
-        }
-        catch (Exception ex)
-        {
-            _logger.LogWarning(ex, "Failed to add participant for event {EventId}", eventId);
-            return BadRequest(ex.Message);
-        }
+        var newParticipant = await _participantService.AddParticipantToEventAsync(eventId, dto);
+        
+        return CreatedAtAction(
+            nameof(GetParticipantDetails), 
+            new { eventId = eventId, participantId = newParticipant.Id }, 
+            newParticipant);
     }
-    
-    [HttpPut("events/{eventId}/participants/{participantId}")]
+
+    [HttpPut("{participantId}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> UpdateParticipant(long eventId, long participantId, [FromBody] UpdateParticipantDto dto)
     {
-        if (!ModelState.IsValid) return BadRequest(ModelState);
-            
         try
         {
             await _participantService.UpdateParticipantDetailsAsync(eventId, participantId, dto);
             return NoContent();
         }
-        catch (Exception ex)
+        catch (NotFoundException ex)
+        {
+            return NotFound(ex.Message);
+        }
+        catch (ArgumentException ex)
         {
             return BadRequest(ex.Message);
         }
+    }
+
+    [HttpDelete("{participantId}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> DeleteParticipant(long eventId, long participantId)
+    {
+        await _participantService.RemoveParticipantFromEventAsync(eventId, participantId);
+        return NoContent();
     }
 }

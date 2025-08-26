@@ -46,16 +46,19 @@ public class EventRepository : IEventRepository
             .FirstOrDefaultAsync(e => e.Id == id);
     }
 
-    public async Task RemoveParticipantAsync(long eventId, long participantId)
+    public async Task<bool> RemoveParticipantAsync(long eventId, long participantId)
     {
         var eventParticipant = await _context.EventParticipants
             .FirstOrDefaultAsync(ep => ep.EventId == eventId && ep.ParticipantId == participantId);
 
-        if (eventParticipant != null)
+        if (eventParticipant == null)
         {
-            _context.EventParticipants.Remove(eventParticipant);
-            await _context.SaveChangesAsync();
+            return false;
         }
+
+        _context.EventParticipants.Remove(eventParticipant);
+        await _context.SaveChangesAsync();
+        return true;
     }
 
     public async Task DeleteEventAsync(long id)
