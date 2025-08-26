@@ -46,7 +46,7 @@ The application is built using a layered architecture based on Domain-Driven Des
 ### Backend
 
 1. **Clone the repository.**
-2. **Navigate to the `backend` directory.**
+2. **Navigate to the `backend/GuestRegistration.Api` directory.**
 3. **Restore the .NET dependencies:**
 
     ```bash
