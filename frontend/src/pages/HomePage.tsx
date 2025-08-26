@@ -1,48 +1,30 @@
-import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { getEvents } from '../services/eventService';
-import type { EventSummary } from '../types/event';
-import logger from '../services/logger';
 import HeroSection from '../components/HeroSection';
 import EventList from '../components/EventList';
 
 const HomePage = () => {
-  const [futureEvents, setFutureEvents] = useState<EventSummary[]>([]);
-  const [pastEvents, setPastEvents] = useState<EventSummary[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { data: futureEvents = [], isLoading: isLoadingFuture, error: errorFuture } = useQuery({
+    queryKey: ['events', 'future'],
+    queryFn: () => getEvents('future'),
+  });
 
-  useEffect(() => {
-    const loadEvents = async () => {
-      logger.info('Attempting to load events...');
-      try {
-        setIsLoading(true);
-        const [future, past] = await Promise.all([
-          getEvents('future'),
-          getEvents('past'),
-        ]);
-        setFutureEvents(future);
-        setPastEvents(past);
-        logger.info('Successfully loaded events.', { counts: { future: future.length, past: past.length } });
-      } catch (err) {
-        setError('Failed to load events. Please try again later.');
-        logger.error('Failed to load events.', err);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    loadEvents();
-  }, []);
+  const { data: pastEvents = [], isLoading: isLoadingPast, error: errorPast } = useQuery({
+    queryKey: ['events', 'past'],
+    queryFn: () => getEvents('past'),
+  });
 
-  const handleEventDeleted = (id: number) => {
-    setFutureEvents(futureEvents.filter(event => event.id !== id));
-  };
+
+  const isLoading = isLoadingFuture || isLoadingPast;
+  const error = errorFuture || errorPast;
+
 
   return (
     <main className="container my-4">
       <HeroSection />
 
       {isLoading && <p>Loading events...</p>}
-      {error && <div className="alert alert-danger">{error}</div>}
+      {error && <div className="alert alert-danger">Failed to load events. Please try again later.</div>}
       
       {!isLoading && !error && (
         <div className="row">
@@ -51,7 +33,6 @@ const HomePage = () => {
               title="Tulevased üritused" 
               events={futureEvents} 
               showDelete={true} 
-              onEventDeleted={handleEventDeleted} 
             />
           </div>
           <div className="col-lg-6 mb-4">

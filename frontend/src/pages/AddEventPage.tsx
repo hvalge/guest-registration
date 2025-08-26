@@ -1,16 +1,22 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { createEvent } from '../services/eventService'
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useForm } from 'react-hook-form';
+import { createEvent } from '../services/eventService';
 import logger from '../services/logger';
 import PageBanner from '../components/PageBanner';
 
+interface EventFormData {
+  name: string;
+  startTime: string;
+  location: string;
+  additionalInformation?: string;
+}
+
 const AddEventPage: React.FC = () => {
-  const [name, setName] = useState('');
-  const [startTime, setStartTime] = useState('');
-  const [location, setLocation] = useState('');
-  const [additionalInformation, setAdditionalInformation] = useState('');
-  const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const { register, handleSubmit, formState: { errors } } = useForm<EventFormData>();
 
   const getLocalDateTime = () => {
     const now = new Date();
@@ -20,44 +26,38 @@ const AddEventPage: React.FC = () => {
 
   const minDateTime = useMemo(() => getLocalDateTime(), []);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
-
-    if (!name || !startTime || !location) {
-      setError('All fields except additional information are required.');
-      return;
-    }
-
-    try {
-      await createEvent({ name, startTime, location, additionalInformation });
+  const mutation = useMutation({
+    mutationFn: createEvent,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['events', 'future'] });
       logger.info('Event created successfully');
       navigate('/');
-    } catch (err) {
-      setError('Failed to create event. Please try again.');
-      logger.error('Failed to create event', err);
+    },
+    onError: (err) => {
+        logger.error('Failed to create event', err);
+        alert('Failed to create event. Please try again.');
     }
-  };
+  });
 
+  const onSubmit = (data: EventFormData) => {
+    mutation.mutate(data);
+  };
 
   return (
     <div className="container my-4">
       <PageBanner title="Ürituse lisamine" />
       <div className="card p-4">
-        <form onSubmit={handleSubmit}>
-          {error && <div className="alert alert-danger">{error}</div>}
+        <form onSubmit={handleSubmit(onSubmit)}>
           <div className="mb-3 row">
             <label htmlFor="name" className="col-sm-3 col-form-label">Ürituse nimi:</label>
             <div className="col-sm-9">
               <input
                 type="text"
-                className="form-control"
+                className={`form-control ${errors.name ? 'is-invalid' : ''}`}
                 id="name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                maxLength={100}
-                required
+                {...register('name', { required: 'Ürituse nimi on kohustuslik', maxLength: { value: 100, message: 'Nimi ei tohi olla pikem kui 100 tähemärki' } })}
               />
+              {errors.name && <div className="invalid-feedback">{errors.name.message}</div>}
             </div>
           </div>
           <div className="mb-3 row">
@@ -65,13 +65,12 @@ const AddEventPage: React.FC = () => {
             <div className="col-sm-9">
               <input
                 type="datetime-local"
-                className="form-control"
+                className={`form-control ${errors.startTime ? 'is-invalid' : ''}`}
                 id="startTime"
-                value={startTime}
-                onChange={(e) => setStartTime(e.target.value)}
                 min={minDateTime}
-                required
+                {...register('startTime', { required: 'Toimumisaeg on kohustuslik' })}
               />
+              {errors.startTime && <div className="invalid-feedback">{errors.startTime.message}</div>}
             </div>
           </div>
           <div className="mb-3 row">
@@ -79,13 +78,11 @@ const AddEventPage: React.FC = () => {
             <div className="col-sm-9">
               <input
                 type="text"
-                className="form-control"
+                className={`form-control ${errors.location ? 'is-invalid' : ''}`}
                 id="location"
-                value={location}
-                onChange={(e) => setLocation(e.target.value)}
-                maxLength={100}
-                required
+                {...register('location', { required: 'Koht on kohustuslik', maxLength: { value: 100, message: 'Asukoht ei tohi olla pikem kui 100 tähemärki' } })}
               />
+              {errors.location && <div className="invalid-feedback">{errors.location.message}</div>}
             </div>
           </div>
           <div className="mb-3 row">
@@ -95,10 +92,9 @@ const AddEventPage: React.FC = () => {
                 className="form-control"
                 id="additionalInformation"
                 rows={3}
-                value={additionalInformation}
-                onChange={(e) => setAdditionalInformation(e.target.value)}
-                maxLength={1000}
+                {...register('additionalInformation', { maxLength: { value: 1000, message: 'Lisainfo ei tohi olla pikem kui 1000 tähemärki' } })}
               ></textarea>
+               {errors.additionalInformation && <div className="invalid-feedback">{errors.additionalInformation.message}</div>}
             </div>
           </div>
           <div className="d-flex justify-content-start">

@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import type { EventSummary } from '../types/event';
 import { deleteEvent } from '../services/eventService';
 import logger from '../services/logger';
@@ -8,26 +9,29 @@ interface EventListProps {
   title: string;
   events: EventSummary[];
   showDelete?: boolean;
-  onEventDeleted?: (id: number) => void;
 }
 
-const EventList: React.FC<EventListProps> = ({ title, events, showDelete = false, onEventDeleted }) => {
+const EventList: React.FC<EventListProps> = ({ title, events, showDelete = false }) => {
+    const queryClient = useQueryClient();
+
+    const mutation = useMutation({
+        mutationFn: deleteEvent,
+        onSuccess: () => {
+          queryClient.invalidateQueries({ queryKey: ['events', 'future'] });
+        },
+        onError:(error) => {
+            logger.error(`Failed to delete event`, error);
+            alert('Failed to delete event.');
+        }
+      });
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('et-EE', { day: '2-digit', month: '2-digit', year: 'numeric' });
   };
 
   const handleDelete = async (id: number) => {
     if (window.confirm('Are you sure you want to delete this event?')) {
-      try {
-        await deleteEvent(id);
-        logger.info(`Event with ID: ${id} deleted.`);
-        if (onEventDeleted) {
-          onEventDeleted(id);
-        }
-      } catch (error) {
-        logger.error(`Failed to delete event with ID: ${id}`, error);
-        alert('Failed to delete event.');
-      }
+        mutation.mutate(id);
     }
   };
 

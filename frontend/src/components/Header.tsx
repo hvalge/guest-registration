@@ -6,7 +6,7 @@ const Header = () => {
       <div className="container d-flex align-items-center ms-4">
         <h1 className="h4 m-0 text-muted">NULLAM</h1>
         <nav className="d-flex align-items-center">
-          <Link to="/" className="nav-link text-muted px-2">AVALEHT</Link>
+          <Link to="/" className="nav-link text-muted px-4">AVALEHT</Link>
           <Link to="/add-event" className="btn btn-primary mx-2">ÜRITUSE LISAMINE</Link>
           <svg width="40" height="40" viewBox="0 0 100 100" className="ms-2">
             <circle cx="50" cy="50" r="45" fill="#004a99" />

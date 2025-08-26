@@ -1,57 +1,42 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getEventDetails, deleteParticipant } from '../services/eventService';
-import type { EventDetails as EventDetailsType, Participant } from '../types/event';
+import type { Participant } from '../types/event';
 import logger from '../services/logger';
 import PageBanner from '../components/PageBanner';
 
 const EventDetailsPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [eventDetails, setEventDetails] = useState<EventDetailsType | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    if (id) {
-      const loadEventDetails = async () => {
-        try {
-          setIsLoading(true);
-          const details = await getEventDetails(parseInt(id, 10));
-          setEventDetails(details);
-          logger.info(`Loaded details for event ID: ${id}`);
-        } catch (err) {
-          setError('Failed to load event details.');
-          logger.error(`Failed to load event details for ID: ${id}`, err);
-        } finally {
-          setIsLoading(false);
-        }
-      };
-      loadEventDetails();
-    }
-  }, [id]);
+  const { data: eventDetails, isLoading, error } = useQuery({
+    queryKey: ['event', id],
+    queryFn: () => getEventDetails(parseInt(id!, 10)),
+    enabled: !!id,
+  });
 
-  const handleParticipantDelete = async (participantId: number) => {
-    if (id && window.confirm('Are you sure you want to remove this participant?')) {
-      try {
-        await deleteParticipant(parseInt(id, 10), participantId);
-        logger.info(`Participant ${participantId} removed from event ${id}`);
-        setEventDetails(prevDetails => {
-            if (!prevDetails) return null;
-            return {
-                ...prevDetails,
-                participants: prevDetails.participants.filter(p => p.id !== participantId)
-            };
-        });
-      } catch (error) {
-        logger.error(`Failed to remove participant ${participantId} from event ${id}`, error);
+  const mutation = useMutation({
+    mutationFn: (participantId: number) => deleteParticipant(parseInt(id!, 10), participantId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['event', id] });
+    },
+    onError: (error) => {
+        logger.error(`Failed to remove participant`, error);
         alert('Failed to remove participant.');
-      }
+    }
+  });
+
+  const handleParticipantDelete = (participantId: number) => {
+    if (window.confirm('Are you sure you want to remove this participant?')) {
+      mutation.mutate(participantId);
     }
   };
 
+
   if (isLoading) return <p>Loading...</p>;
-  if (error) return <div className="alert alert-danger">{error}</div>;
+  if (error) return <div className="alert alert-danger">Failed to load event details.</div>;
   if (!eventDetails) return <p>Event not found.</p>;
 
   return (
